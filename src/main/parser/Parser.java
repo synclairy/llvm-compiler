@@ -7,15 +7,11 @@ import main.models.common.TCode;
 import main.models.common.Token;
 import main.models.common.TokenSequence;
 import main.models.exceptions.ParserException;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
+import main.utils.CodeClassifier;
 
 public class Parser {
     private final GTreeRoot root;
     private TokenSequence tokens;
-    private static HashMap<NCode, HashSet<TCode>> separators;
 
     public GTreeRoot getRoot() {
         return root;
@@ -24,14 +20,6 @@ public class Parser {
     public Parser() {
         root = new GTreeRoot(NCode.CompUnit);
         tokens = null;
-        separators = new HashMap<>();
-        separators.put(NCode.LOrExp, new HashSet<>(Collections.singletonList(TCode.OR)));
-        separators.put(NCode.LAndExp, new HashSet<>(Collections.singletonList(TCode.AND)));
-        separators.put(NCode.EqExp, new HashSet<>(Arrays.asList(TCode.EQL, TCode.NEQ)));
-        separators.put(NCode.RelExp, new HashSet<>(
-                Arrays.asList(TCode.LSS, TCode.GRE, TCode.LEQ, TCode.GEQ)));
-        separators.put(NCode.AddExp, new HashSet<>(Arrays.asList(TCode.PLUS, TCode.MINU)));
-        separators.put(NCode.MulExp, new HashSet<>(Arrays.asList(TCode.MULT, TCode.DIV, TCode.MOD)));
     }
 
     public void parse(TokenSequence tokens) throws ParserException {
@@ -465,7 +453,7 @@ public class Parser {
         GTreeRoot cur = new GTreeRoot(whole);
         parse4NCode(cur, recur);
         GTreeRoot temp;
-        while (separators.get(whole).contains(peek())) {
+        while (CodeClassifier.isSeparator(whole, peek())) {
             temp = new GTreeRoot(whole);
             temp.addChild(cur);
             addNextLeaf(temp);
