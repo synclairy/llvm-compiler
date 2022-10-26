@@ -17,6 +17,22 @@ public class TokenSequence {
         }
     }
 
+    public String peekName() {
+        if (pos < num) {
+            return tokens.get(pos).getValue();
+        } else {
+            return null;
+        }
+    }
+
+    public String getPeekValue() {
+        if (pos < num) {
+            return tokens.get(pos).getValue();
+        } else {
+            return null;
+        }
+    }
+
     public TCode peek(int n) {
         if (n + pos < num) {
             return tokens.get(pos + n).getCode();

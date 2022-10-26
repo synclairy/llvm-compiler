@@ -1,5 +1,6 @@
 package main.lexer;
 
+import main.models.common.ErrorInfoList;
 import main.models.common.Token;
 import main.models.common.TokenSequence;
 import main.models.common.TCode;
@@ -66,13 +67,13 @@ public class Lexer {
                 if ((40 <= p && p <= 126) || p == 32 || p == 33 || p == '%') {
                     curToken.append(next());
                     if (p == '\\' && peek() != 'n') {
-                        throw new LexerException(tokens.getLine());
+                        ErrorInfoList.getInstance().addError('a', tokens.getLine());
                     }
                     if (p == '%' && peek() != 'd') {
-                        throw new LexerException(tokens.getLine());
+                        ErrorInfoList.getInstance().addError('a', tokens.getLine());
                     }
                 } else {
-                    throw new LexerException(tokens.getLine());
+                    ErrorInfoList.getInstance().addError('a', tokens.getLine());
                 }
             }
             curToken.append(next());

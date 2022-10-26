@@ -15,6 +15,17 @@ public class CharClassifier {
         return c == ' ' || c == '\r' || c == '\n' || c == '\t';
     }
 
+    public static int countArgs(String s) {
+        int len = s.length();
+        int cnt = 0;
+        for (int i = 0; i < len; i++) {
+            if (s.charAt(i) == '%') {
+                cnt++;
+            }
+        }
+        return cnt;
+    }
+
     public static TCode reserve(String s) {
         switch (s) {
             case "main":

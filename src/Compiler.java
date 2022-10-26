@@ -1,9 +1,9 @@
 import main.lexer.Lexer;
+import main.models.common.ErrorInfoList;
+import main.models.common.symbol.SymbolTable;
 import main.models.common.TokenSequence;
 import main.models.exceptions.CompilerException;
-import main.models.common.GTreeRoot;
 import main.parser.Parser;
-import main.utils.Printer;
 
 public class Compiler {
     private final Lexer lexer;
@@ -15,16 +15,23 @@ public class Compiler {
     }
 
     private void compile() throws CompilerException {
-        Printer.getInstance().initial();
+        // Printer.getInstance().initial();
+
+        ErrorInfoList.getInstance().initial();
 
         lexer.analyse();
         TokenSequence tokens = lexer.getTokens();
 
-        parser.parse(tokens);
-        GTreeRoot root = parser.getRoot();
+        SymbolTable global = new SymbolTable(null, null);
+        parser.parse(tokens, global);
 
-        root.print();
-        Printer.getInstance().close();
+        global.print();
+        // GTreeRoot root = parser.getRoot();
+
+        // ErrorInfoList.getInstance().print();
+        // ErrorInfoList.getInstance().close();
+
+        // Printer.getInstance().close();
     }
     public static void main(String[] args) {
         Compiler compiler = new Compiler();
