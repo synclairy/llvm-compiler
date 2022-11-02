@@ -1,4 +1,4 @@
-package main.models.common;
+package main.models.common.ast;
 
 public class Token {
     private final TCode code;

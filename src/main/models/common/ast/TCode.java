@@ -1,4 +1,4 @@
-package main.models.common;
+package main.models.common.ast;
 
 public enum TCode {
     IDENFR, INTCON, STRCON, MAINTK, CONSTTK, INTTK,

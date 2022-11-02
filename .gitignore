@@ -3,5 +3,11 @@
 *.zip
 *.sh
 *.iml
-out
+*.c
+*.h
+*.ll
+*.o
+*.s
+*.out
 .idea
+out

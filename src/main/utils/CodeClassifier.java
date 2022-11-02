@@ -1,7 +1,7 @@
 package main.utils;
 
-import main.models.common.NCode;
-import main.models.common.TCode;
+import main.models.common.ast.NCode;
+import main.models.common.ast.TCode;
 
 public class CodeClassifier {
     public static boolean isSeparator(NCode n, TCode t) {

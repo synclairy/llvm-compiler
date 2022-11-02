@@ -1,9 +1,9 @@
 package main.lexer;
 
-import main.models.common.ErrorInfoList;
-import main.models.common.Token;
-import main.models.common.TokenSequence;
-import main.models.common.TCode;
+import main.models.common.handler.ErrorInfoList;
+import main.models.common.ast.Token;
+import main.models.common.ast.TokenSequence;
+import main.models.common.ast.TCode;
 import main.models.exceptions.LexerException;
 import main.utils.CharClassifier;
 

@@ -1,9 +1,12 @@
 import main.lexer.Lexer;
-import main.models.common.ErrorInfoList;
+import main.models.common.handler.ErrorInfoList;
+import main.models.common.ast.TreeRoot;
+import main.models.common.llvm.IrList;
 import main.models.common.symbol.SymbolTable;
-import main.models.common.TokenSequence;
+import main.models.common.ast.TokenSequence;
 import main.models.exceptions.CompilerException;
 import main.parser.Parser;
+import main.utils.Printer;
 
 public class Compiler {
     private final Lexer lexer;
@@ -15,24 +18,25 @@ public class Compiler {
     }
 
     private void compile() throws CompilerException {
-        // Printer.getInstance().initial();
+        Printer.getInstance().initial("llvm_ir");
 
         ErrorInfoList.getInstance().initial();
 
         lexer.analyse();
         TokenSequence tokens = lexer.getTokens();
 
-        SymbolTable global = new SymbolTable(null, null);
+        SymbolTable global = new SymbolTable(null);
         parser.parse(tokens, global);
 
-        global.print();
-        // GTreeRoot root = parser.getRoot();
+        TreeRoot root = parser.getRoot();
+        TreeRoot.setGlobal(global);
+        root.llvm();
 
-        // ErrorInfoList.getInstance().print();
-        // ErrorInfoList.getInstance().close();
+        IrList.getInstance().print();
 
-        // Printer.getInstance().close();
+        Printer.getInstance().close();
     }
+
     public static void main(String[] args) {
         Compiler compiler = new Compiler();
         try {

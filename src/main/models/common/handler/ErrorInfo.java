@@ -1,4 +1,4 @@
-package main.models.common;
+package main.models.common.handler;
 
 public class ErrorInfo implements Comparable<ErrorInfo> {
     private final char type;

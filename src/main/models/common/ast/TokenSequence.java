@@ -1,4 +1,4 @@
-package main.models.common;
+package main.models.common.ast;
 
 import main.utils.Printer;
 import java.util.ArrayList;

@@ -14,8 +14,8 @@ public class Printer {
         return PRINTER;
     }
 
-    public void initial() {
-        File file = new File("output.txt");
+    public void initial(String fileName) {
+        File file = new File(fileName + ".txt");
         try {
             fw = new FileWriter(file.getName());
         } catch (IOException e) {

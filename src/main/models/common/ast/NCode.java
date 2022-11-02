@@ -1,4 +1,4 @@
-package main.models.common;
+package main.models.common.ast;
 
 public enum NCode {
     CompUnit, Decl, FuncDef, MainFuncDef, ConstDecl, VarDecl,

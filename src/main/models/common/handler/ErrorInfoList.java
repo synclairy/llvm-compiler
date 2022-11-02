@@ -1,4 +1,4 @@
-package main.models.common;
+package main.models.common.handler;
 
 import java.io.BufferedWriter;
 import java.io.File;

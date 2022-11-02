@@ -1,17 +1,46 @@
 package main.models.common.symbol;
 
-import main.models.common.grammer.GTreeNode;
+import java.util.ArrayList;
 
 public class ArraySymbol implements SymbolItem {
     private String name;
     private int dCount;
-    private GTreeNode d1;
-    private GTreeNode d2;
+    private int d1;
+    private int d2;
+    private ArrayList<Integer> values;
 
-    public ArraySymbol(String name, int count, GTreeNode d1, GTreeNode d2) {
+    @Override
+    public void setValues(ArrayList<Integer> values) {
+        this.values = values;
+    }
+
+    public ArraySymbol(String name, int count, int d1, int d2) {
         this.name = name;
         this.dCount = count;
         this.d1 = d1;
         this.d2 = d2;
+    }
+
+    public int getLevel() {
+        if (dCount == 1) {
+            return 1;
+        } else {
+            return d2;
+        }
+    }
+
+    @Override
+    public void declare(String type) {
+
+    }
+
+    @Override
+    public String getReg() {
+        return null;
+    }
+
+    @Override
+    public String getName() {
+        return name;
     }
 }

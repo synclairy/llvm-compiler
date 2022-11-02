@@ -1,6 +1,8 @@
 package main.utils;
 
-import main.models.common.TCode;
+import main.models.common.ast.TCode;
+
+import java.util.ArrayList;
 
 public class CharClassifier {
     public static boolean isIdentNonDigit(char c) {
@@ -13,6 +15,27 @@ public class CharClassifier {
 
     public static boolean isSpace(char c) {
         return c == ' ' || c == '\r' || c == '\n' || c == '\t';
+    }
+
+    public static ArrayList<String> fixFormatString(String s) {
+        int len = s.length();
+        ArrayList<String> chars = new ArrayList<>();
+        for (int i = 0; i < len; i++) {
+            if (s.charAt(i) == '\"') {
+                continue;
+            }
+            if (s.charAt(i) == '%') {
+                i++;
+                chars.add(null);
+            } else if (s.charAt(i) == '\\') {
+                i++;
+                chars.add("10");
+            } else {
+                int n = s.charAt(i);
+                chars.add(String.valueOf(n));
+            }
+        }
+        return chars;
     }
 
     public static int countArgs(String s) {
