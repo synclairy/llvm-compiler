@@ -1,9 +1,9 @@
 package main.models.common.symbol;
 
 import main.models.common.ast.TCode;
-import main.models.common.llvm.FuncDefIr;
+import main.models.common.llvm.FunctionDeclare;
+import main.models.common.llvm.FunctionDefine;
 import main.models.common.llvm.IrList;
-import main.models.common.llvm.LibFuncIr;
 
 import java.util.ArrayList;
 
@@ -50,7 +50,7 @@ public class FuncSymbol implements SymbolItem {
     public void declare(String type) {
         boolean isVoid = returnType.equals(TCode.VOIDTK);
         if (isLib) {
-            IrList.getInstance().addIr(new LibFuncIr(isVoid, name, levels));
+            IrList.getInstance().addFuncDecl(new FunctionDeclare(isVoid, name, levels));
         } else {
             for (SymbolItem item : params) {
                 if (item instanceof VariableSymbol) {
@@ -59,7 +59,7 @@ public class FuncSymbol implements SymbolItem {
                     levels.add(((ArraySymbol) item).getLevel());
                 }
             }
-            IrList.getInstance().addIr(new FuncDefIr(isVoid, name, levels));
+            IrList.getInstance().addFuncDef(new FunctionDefine(isVoid, name, levels));
         }
     }
 

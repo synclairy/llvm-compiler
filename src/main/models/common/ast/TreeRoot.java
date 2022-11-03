@@ -1,11 +1,10 @@
 package main.models.common.ast;
 
 import main.models.common.llvm.AddIr;
-import main.models.common.llvm.FuncDefIr;
+import main.models.common.llvm.FunctionDefine;
 import main.models.common.llvm.IR;
 import main.models.common.llvm.IrList;
 import main.models.common.llvm.MulIr;
-import main.models.common.llvm.RBraceIr;
 import main.models.common.llvm.ReturnIr;
 import main.models.common.llvm.SdivIr;
 import main.models.common.llvm.SubIr;
@@ -60,9 +59,9 @@ public class TreeRoot implements TreeNode {
         switch (code) {
             case MainFuncDef:
                 IrList.clearCount();
-                addIr(new FuncDefIr(false, "main", new ArrayList<>()));
+                IrList.getInstance().addFuncDef(
+                        new FunctionDefine(false, "main", new ArrayList<>()));
                 getRootByIndex(4).llvm();
-                addIr(new RBraceIr());
                 break;
             case ConstDecl:
                 travelSal1(NCode.ConstDef);
@@ -127,7 +126,6 @@ public class TreeRoot implements TreeNode {
                 TreeRoot b = (TreeRoot) children.get(children.size() - 1);
                 table.setChildTableParams(b.table);
                 travelSal1(NCode.Block);
-                addIr(new RBraceIr());
                 break;
             case FuncFParams:
                 travelSal1(NCode.FuncFParam);

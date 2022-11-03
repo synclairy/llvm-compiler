@@ -1,7 +1,7 @@
 package main.models.common.symbol;
 
 import main.models.common.llvm.AllocaIr;
-import main.models.common.llvm.GlobalDefIr;
+import main.models.common.llvm.GlobalDefine;
 import main.models.common.llvm.IrList;
 import main.models.common.llvm.StoreIr;
 
@@ -47,7 +47,7 @@ public class VariableSymbol implements SymbolItem {
                 break;
             default:
                 addrReg = "@" + name;
-                IrList.getInstance().addIr(new GlobalDefIr(this));
+                IrList.getInstance().addGlobal(new GlobalDefine(this));
         }
     }
 

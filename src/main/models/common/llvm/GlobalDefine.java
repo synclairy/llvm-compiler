@@ -2,13 +2,15 @@ package main.models.common.llvm;
 
 import main.models.common.symbol.SymbolItem;
 import main.models.common.symbol.VariableSymbol;
+import main.utils.Printer;
 
-public class GlobalDefIr implements IR {
+public class GlobalDefine implements Define {
     private final SymbolItem item;
 
-    public GlobalDefIr(SymbolItem item) {
+    public GlobalDefine(SymbolItem item) {
         this.item = item;
     }
+
 
     @Override
     public String toString() {
@@ -17,5 +19,10 @@ public class GlobalDefIr implements IR {
                     + ((VariableSymbol) item).getValue() + "\n";
         }
         return "";
+    }
+
+    @Override
+    public void print() {
+        Printer.getInstance().print(toString());
     }
 }

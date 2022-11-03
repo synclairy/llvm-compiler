@@ -48,7 +48,7 @@ public class SymbolTable {
             items.get(i).declare("param");
         }
         if (father.isGlobal()) {
-            IrList.newReg();
+            IrList.getInstance().newBlock(IrList.newReg());
         }
         for (int i = 0; i < paramsNum; i++) {
             items.get(i).declare("paramStore");
