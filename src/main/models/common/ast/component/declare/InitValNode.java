@@ -13,7 +13,7 @@ public class InitValNode extends TreeRoot {
     public void llvm() {
         if (getChildren().size() == 1) {
             if (getTable().isGlobal()) {
-                getTable().fillInitValue(synthesize());
+                getTable().fillInitValue(getRootByIndex(0).synthesize());
             } else {
                 getRootByIndex(0).llvm();
                 getTable().storeSymbol(null, lastOp());

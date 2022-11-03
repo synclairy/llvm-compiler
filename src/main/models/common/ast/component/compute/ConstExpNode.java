@@ -13,4 +13,9 @@ public class ConstExpNode extends TreeRoot {
     public void llvm() {
 
     }
+
+    @Override
+    public int synthesize() {
+        return getRootByIndex(0).synthesize();
+    }
 }

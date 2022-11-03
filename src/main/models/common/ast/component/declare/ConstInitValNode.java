@@ -12,7 +12,7 @@ public class ConstInitValNode extends TreeRoot {
     @Override
     public void llvm() {
         if (getChildren().size() == 1) {
-            getTable().fillInitValue(synthesize());
+            getTable().fillInitValue(getRootByIndex(0).synthesize());
         } else {
             travelSal1(NCode.ConstInitVal);
         }
