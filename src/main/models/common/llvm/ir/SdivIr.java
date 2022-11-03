@@ -1,4 +1,6 @@
-package main.models.common.llvm;
+package main.models.common.llvm.ir;
+
+import main.models.common.llvm.IrList;
 
 public class SdivIr implements IR {
     private final String op1;

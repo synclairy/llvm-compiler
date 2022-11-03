@@ -1,8 +1,8 @@
 package main.models.common.symbol;
 
 import main.models.common.ast.TCode;
-import main.models.common.llvm.FunctionDeclare;
-import main.models.common.llvm.FunctionDefine;
+import main.models.common.llvm.define.FunctionDeclare;
+import main.models.common.llvm.define.FunctionDefine;
 import main.models.common.llvm.IrList;
 
 import java.util.ArrayList;

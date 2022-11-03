@@ -1,4 +1,4 @@
-package main.models.common.llvm;
+package main.models.common.llvm.define;
 
 import main.models.common.symbol.SymbolItem;
 import main.models.common.symbol.VariableSymbol;

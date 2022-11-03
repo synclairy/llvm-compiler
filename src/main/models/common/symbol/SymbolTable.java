@@ -2,13 +2,13 @@ package main.models.common.symbol;
 
 import main.models.common.ast.NCode;
 import main.models.common.ast.TCode;
-import main.models.common.llvm.CallIr;
-import main.models.common.llvm.IR;
+import main.models.common.llvm.ir.CallIr;
+import main.models.common.llvm.ir.IR;
 import main.models.common.llvm.IrList;
-import main.models.common.llvm.LoadIr;
-import main.models.common.llvm.ReturnIr;
-import main.models.common.llvm.StoreIr;
-import main.models.common.llvm.SubIr;
+import main.models.common.llvm.ir.LoadIr;
+import main.models.common.llvm.ir.ReturnIr;
+import main.models.common.llvm.ir.StoreIr;
+import main.models.common.llvm.ir.SubIr;
 
 import java.util.ArrayList;
 

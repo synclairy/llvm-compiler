@@ -1,4 +1,4 @@
-package main.models.common.llvm;
+package main.models.common.llvm.ir;
 
 public class StoreIr implements IR {
     private final String op1;

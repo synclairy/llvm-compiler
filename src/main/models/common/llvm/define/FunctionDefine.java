@@ -1,5 +1,6 @@
-package main.models.common.llvm;
+package main.models.common.llvm.define;
 
+import main.models.common.llvm.ir.IR;
 import main.utils.Printer;
 
 import java.util.ArrayList;

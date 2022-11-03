@@ -1,6 +1,10 @@
 package main.models.common.llvm;
 
-import main.models.common.symbol.SymbolItem;
+import main.models.common.llvm.define.Define;
+import main.models.common.llvm.define.FunctionDeclare;
+import main.models.common.llvm.define.FunctionDefine;
+import main.models.common.llvm.define.GlobalDefine;
+import main.models.common.llvm.ir.IR;
 
 import java.util.ArrayList;
 

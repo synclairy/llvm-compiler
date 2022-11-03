@@ -1,9 +1,9 @@
 package main.models.common.symbol;
 
-import main.models.common.llvm.AllocaIr;
-import main.models.common.llvm.GlobalDefine;
+import main.models.common.llvm.ir.AllocaIr;
+import main.models.common.llvm.define.GlobalDefine;
 import main.models.common.llvm.IrList;
-import main.models.common.llvm.StoreIr;
+import main.models.common.llvm.ir.StoreIr;
 
 import java.util.ArrayList;
 

@@ -1,5 +1,8 @@
 package main.parser;
 
+import main.models.common.ast.component.flow.*;
+import main.models.common.ast.component.compute.*;
+import main.models.common.ast.component.declare.*;
 import main.models.common.handler.ErrorInfoList;
 import main.models.common.ast.TreeLeaf;
 import main.models.common.ast.TreeRoot;
@@ -8,7 +11,6 @@ import main.models.common.symbol.SymbolTable;
 import main.models.common.ast.TCode;
 import main.models.common.ast.Token;
 import main.models.common.ast.TokenSequence;
-import main.models.exceptions.ParserException;
 import main.utils.CharClassifier;
 import main.utils.CodeClassifier;
 
@@ -26,215 +28,212 @@ public class Parser {
         eil = ErrorInfoList.getInstance();
     }
 
-    public void parse(TokenSequence tokens, SymbolTable global) throws ParserException {
+    public void parse(TokenSequence tokens, SymbolTable global) {
         this.tokens = tokens;
-        root = new TreeRoot(NCode.CompUnit, global);
-        parseCompUnit(global);
+        root = new CompUnitNode();
+        root.setTable(global);
+        parseCompUnit();
     }
 
-    private void parseCompUnit(SymbolTable table) throws ParserException {
+    private void parseCompUnit() {
         while (!peek(2).equals(TCode.LPARENT)) {
-            parseDecl(root, table);
+            parseDecl(root);
         }
         while (!peek(1).equals(TCode.MAINTK)) {
-            parseFuncDef(root, table);
+            parseFuncDef(root);
         }
-        parseMainFuncDef(root, table);
+        parseMainFuncDef(root);
         if (!peek().equals(TCode.EOF)) {
-            throw new ParserException(tokens.getLastLine());
+            //throw new ParserException(tokens.getLastLine());
         }
     }
 
-    private void parseDecl(TreeRoot father, SymbolTable table) throws ParserException {
+    private void parseDecl(TreeRoot father) {
         if (peek().equals(TCode.CONSTTK)) {
-            parseConstDecl(father, table);
+            parseConstDecl(father);
         } else {
-            parseValDecl(father, table);
+            parseValDecl(father);
         }
     }
 
-    private void parseConstDecl(TreeRoot father, SymbolTable table) throws ParserException {
-        TreeRoot cur = new TreeRoot(NCode.ConstDecl, table);
+    private void parseConstDecl(TreeRoot father) {
+        TreeRoot cur = new ConstDeclNode();
+        father.addChild(cur);
         addNextLeaf(cur);
         judgeNext(cur, TCode.INTTK);
-        parseConstDef(cur, table);
+        parseConstDef(cur);
         while (peek().equals(TCode.COMMA)) {
             addNextLeaf(cur);
-            parseConstDef(cur, table);
+            parseConstDef(cur);
         }
         judgeNext(cur, TCode.SEMICN);
-        father.addChild(cur);
     }
 
-    private void parseConstDef(TreeRoot father, SymbolTable table) throws ParserException {
-        TreeRoot cur = new TreeRoot(NCode.ConstDef, table);
+    private void parseConstDef(TreeRoot father) {
+        TreeRoot cur = new ConstDefNode();
+        father.addChild(cur);
         String s = tokens.peekName();
         judgeNext(cur, TCode.IDENFR);
         for (int i = 0; i < 2; i++) {
             if (peek().equals(TCode.LBRACK)) {
                 addNextLeaf(cur);
-                parseConstExp(cur, table);
+                parseConstExp(cur);
                 judgeNext(cur, TCode.RBRACK);
             }
         }
         judgeNext(cur, TCode.ASSIGN);
-        parseConstInitVal(cur, table);
-        father.addChild(cur);
+        parseConstInitVal(cur);
     }
 
-    private void parseConstInitVal(TreeRoot father, SymbolTable table) throws ParserException {
-        TreeRoot cur = new TreeRoot(NCode.ConstInitVal, table);
+    private void parseConstInitVal(TreeRoot father) {
+        TreeRoot cur = new ConstInitValNode();
+        father.addChild(cur);
         if (peek().equals(TCode.LBRACE)) {
             addNextLeaf(cur);
             if (peek().equals(TCode.RBRACE)) {
                 addNextLeaf(cur);
             } else {
-                parseConstInitVal(cur, table);
+                parseConstInitVal(cur);
                 while (peek().equals(TCode.COMMA)) {
                     addNextLeaf(cur);
-                    parseConstInitVal(cur, table);
+                    parseConstInitVal(cur);
                 }
                 judgeNext(cur, TCode.RBRACE);
             }
         } else {
-            parseConstExp(cur, table);
+            parseConstExp(cur);
         }
-        father.addChild(cur);
     }
 
-    private void parseValDecl(TreeRoot father, SymbolTable table) throws ParserException {
-        TreeRoot cur = new TreeRoot(NCode.VarDecl, table);
+    private void parseValDecl(TreeRoot father) {
+        TreeRoot cur = new VarDeclNode();
+        father.addChild(cur);
         judgeNext(cur, TCode.INTTK);
-        parseVarDef(cur, table);
+        parseVarDef(cur);
         while (peek().equals(TCode.COMMA)) {
             addNextLeaf(cur);
-            parseVarDef(cur, table);
+            parseVarDef(cur);
         }
         judgeNext(cur, TCode.SEMICN);
-        father.addChild(cur);
     }
 
-    private void parseVarDef(TreeRoot father, SymbolTable table) throws ParserException {
-        TreeRoot cur = new TreeRoot(NCode.VarDef, table);
-        String s = tokens.peekName();
+    private void parseVarDef(TreeRoot father) {
+        TreeRoot cur = new VarDefNode();
+        father.addChild(cur);
         judgeNext(cur, TCode.IDENFR);
         for (int i = 0; i < 2; i++) {
             if (peek().equals(TCode.LBRACK)) {
                 addNextLeaf(cur);
-                parseConstExp(cur, table);
+                parseConstExp(cur);
                 judgeNext(cur, TCode.RBRACK);
             }
         }
         if (peek().equals(TCode.ASSIGN)) {
             addNextLeaf(cur);
-            parseInitVal(cur, table);
+            parseInitVal(cur);
         }
-        father.addChild(cur);
     }
 
-    private void parseInitVal(TreeRoot father, SymbolTable table) throws ParserException {
-        TreeRoot cur = new TreeRoot(NCode.InitVal, table);
+    private void parseInitVal(TreeRoot father) {
+        TreeRoot cur = new InitValNode();
+        father.addChild(cur);
         if (peek().equals(TCode.LBRACE)) {
             addNextLeaf(cur);
             if (peek().equals(TCode.RBRACE)) {
                 addNextLeaf(cur);
             } else {
-                parseInitVal(cur, table);
+                parseInitVal(cur);
                 while (peek().equals(TCode.COMMA)) {
                     addNextLeaf(cur);
-                    parseInitVal(cur, table);
+                    parseInitVal(cur);
                 }
                 judgeNext(cur, TCode.RBRACE);
             }
         } else {
-            parseExp(cur, table);
+            parseExp(cur);
         }
-        father.addChild(cur);
     }
 
-    private void parseFuncDef(TreeRoot father, SymbolTable table) throws ParserException {
-        TreeRoot cur = new TreeRoot(NCode.FuncDef, table);
-        parseFuncType(cur, table);
-        String s = tokens.peekName();
+    private void parseFuncDef(TreeRoot father) {
+        TreeRoot cur = new FuncDefNode();
+        father.addChild(cur);
+        parseFuncType(cur);
         judgeNext(cur, TCode.IDENFR);
         judgeNext(cur, TCode.LPARENT);
         if (peek().equals(TCode.RPARENT)) {
             addNextLeaf(cur);
         } else {
-            parseFuncFParams(cur, table);
+            parseFuncFParams(cur);
             judgeNext(cur, TCode.RPARENT);
         }
-        parseBlock(cur, table);
-        father.addChild(cur);
+        parseBlock(cur);
     }
 
-    private void parseMainFuncDef(TreeRoot father, SymbolTable table) throws ParserException {
-        TreeRoot cur = new TreeRoot(NCode.MainFuncDef, table);
+    private void parseMainFuncDef(TreeRoot father) {
+        TreeRoot cur = new MainFuncDefNode();
+        father.addChild(cur);
         judgeNext(cur, TCode.INTTK);
         judgeNext(cur, TCode.MAINTK);
         judgeNext(cur, TCode.LPARENT);
         judgeNext(cur, TCode.RPARENT);
-        parseBlock(cur, table);
-        father.addChild(cur);
+        parseBlock(cur);
     }
 
-    private void parseFuncType(TreeRoot father, SymbolTable table) {
-        TreeRoot cur = new TreeRoot(NCode.FuncType, table);
+    private void parseFuncType(TreeRoot father) {
+        TreeRoot cur = new FuncTypeNode();
+        father.addChild(cur);
         if (peek().equals(TCode.VOIDTK) || peek().equals(TCode.INTTK)) {
             addNextLeaf(cur);
         }
-        father.addChild(cur);
     }
 
-    private void parseFuncFParams(TreeRoot father, SymbolTable table) throws ParserException {
-        TreeRoot cur = new TreeRoot(NCode.FuncFParams, table);
-        parseFuncFParam(cur, table);
+    private void parseFuncFParams(TreeRoot father) {
+        TreeRoot cur = new FuncFParamsNode();
+        father.addChild(cur);
+        parseFuncFParam(cur);
         while (peek().equals(TCode.COMMA)) {
             addNextLeaf(cur);
-            parseFuncFParam(cur, table);
+            parseFuncFParam(cur);
         }
-        father.addChild(cur);
     }
 
-    private void parseFuncFParam(TreeRoot father, SymbolTable table) throws ParserException {
-        TreeRoot cur = new TreeRoot(NCode.FuncFParam, table);
+    private void parseFuncFParam(TreeRoot father) {
+        TreeRoot cur = new FuncFParamNode();
+        father.addChild(cur);
         judgeNext(cur, TCode.INTTK);
-        String s = tokens.peekName();
         judgeNext(cur, TCode.IDENFR);
         if (peek().equals(TCode.LBRACK)) {
             addNextLeaf(cur);
             judgeNext(cur, TCode.RBRACK);
             if (peek().equals(TCode.LBRACK)) {
                 addNextLeaf(cur);
-                parseConstExp(cur, table);
+                parseConstExp(cur);
                 judgeNext(cur, TCode.RBRACK);
             }
         }
-        father.addChild(cur);
     }
 
-    private void parseBlock(TreeRoot father, SymbolTable fatherTable) throws ParserException {
-        SymbolTable table = fatherTable.createChildTable();
-        TreeRoot cur = new TreeRoot(NCode.Block, table);
+    private void parseBlock(TreeRoot father) {
+        TreeRoot cur = new BlockNode();
+        father.addChild(cur);
         judgeNext(cur, TCode.LBRACE);
         while (!peek().equals(TCode.RBRACE)) {
-            parseBlockItem(cur, table);
+            parseBlockItem(cur);
         }
         addNextLeaf(cur);
-        father.addChild(cur);
     }
 
-    private void parseBlockItem(TreeRoot father, SymbolTable table) throws ParserException {
+    private void parseBlockItem(TreeRoot father) {
         if (peek().equals(TCode.CONSTTK) || peek().equals(TCode.INTTK)) {
-            parseDecl(father, table);
+            parseDecl(father);
         } else {
-            parseStmt(father, false, table);
+            parseStmt(father, false);
         }
     }
 
-    private void parseStmt(TreeRoot father, boolean inLoop, SymbolTable table)
-            throws ParserException {
-        TreeRoot cur = new TreeRoot(NCode.Stmt, table);
+    private void parseStmt(TreeRoot father, boolean inLoop) {
+        TreeRoot cur = new StmtNode();
+        father.addChild(cur);
         switch (peek()) {
             case PRINTFTK:
                 addNextLeaf(cur);
@@ -244,7 +243,7 @@ public class Parser {
                 judgeNext(cur, TCode.STRCON);
                 while (peek().equals(TCode.COMMA)) {
                     addNextLeaf(cur);
-                    parseExp(cur, table);
+                    parseExp(cur);
                     cnt--;
                 }
                 if (cnt != 0) {
@@ -258,7 +257,7 @@ public class Parser {
                 if (peek().equals(TCode.SEMICN)) {
                     addNextLeaf(cur);
                 } else {
-                    parseExp(cur, table);
+                    parseExp(cur);
                     judgeNext(cur, TCode.SEMICN);
                 }
                 break;
@@ -273,108 +272,108 @@ public class Parser {
             case WHILETK:
                 addNextLeaf(cur);
                 judgeNext(cur, TCode.LPARENT);
-                parseCond(cur, table);
+                parseCond(cur);
                 judgeNext(cur, TCode.RPARENT);
-                parseStmt(cur, true, table);
+                parseStmt(cur, true);
                 break;
             case IFTK:
                 addNextLeaf(cur);
                 judgeNext(cur, TCode.LPARENT);
-                parseCond(cur, table);
+                parseCond(cur);
                 judgeNext(cur, TCode.RPARENT);
-                parseStmt(cur, inLoop, table);
+                parseStmt(cur, inLoop);
                 if (peek().equals(TCode.ELSETK)) {
                     addNextLeaf(cur);
-                    parseStmt(cur,inLoop, table);
+                    parseStmt(cur,inLoop);
                 }
                 break;
             case LBRACE:
-                parseBlock(cur, table);
+                parseBlock(cur);
                 break;
             default:
                 if (tokens.posCmp(TCode.ASSIGN, TCode.SEMICN) < 0) {
-                    parseLVal(cur, table);
+                    parseLVal(cur);
                     judgeNext(cur, TCode.ASSIGN);
                     if (peek().equals(TCode.GETINTTK)) {
                         addNextLeaf(cur);
                         judgeNext(cur, TCode.LPARENT);
                         judgeNext(cur, TCode.RPARENT);
                     } else {
-                        parseExp(cur, table);
+                        parseExp(cur);
                     }
                     judgeNext(cur, TCode.SEMICN);
                 } else {
                     if (peek().equals(TCode.SEMICN)) {
                         addNextLeaf(cur);
                     } else  {
-                        parseExp(cur, table);
+                        parseExp(cur);
                         judgeNext(cur, TCode.SEMICN);
                     }
                 }
         }
-        father.addChild(cur);
     }
 
-    private void parseExp(TreeRoot father, SymbolTable table) throws ParserException {
-        TreeRoot cur = new TreeRoot(NCode.Exp, table);
-        parseAddExp(cur, table);
+    private void parseExp(TreeRoot father) {
+        TreeRoot cur = new ExpNode();
         father.addChild(cur);
+        parseAddExp(cur);
     }
 
-    private void parseCond(TreeRoot father, SymbolTable table) throws ParserException {
-        TreeRoot cur = new TreeRoot(NCode.Cond, table);
-        parseLOrExp(cur, table);
+    private void parseCond(TreeRoot father) {
+        TreeRoot cur = new CondNode();
         father.addChild(cur);
+        parseLOrExp(cur);
     }
 
-    private void parseLVal(TreeRoot father, SymbolTable table) throws ParserException {
-        TreeRoot cur = new TreeRoot(NCode.LVal, table);
+    private void parseLVal(TreeRoot father) {
+        TreeRoot cur = new LValNode();
+        father.addChild(cur);
         judgeNext(cur, TCode.IDENFR);
         for (int i = 0; i < 2; i++) {
             if (peek().equals(TCode.LBRACK)) {
                 addNextLeaf(cur);
-                parseExp(cur, table);
+                parseExp(cur);
                 judgeNext(cur, TCode.RBRACK);
             }
         }
-        father.addChild(cur);
     }
 
-    private void parsePrimaryExp(TreeRoot father, SymbolTable table) throws ParserException {
-        TreeRoot cur = new TreeRoot(NCode.PrimaryExp, table);
+    private void parsePrimaryExp(TreeRoot father) {
+        TreeRoot cur = new PrimaryExpNode();
+        father.addChild(cur);
         switch (peek()) {
             case LPARENT:
                 addNextLeaf(cur);
-                parseExp(cur, table);
+                parseExp(cur);
                 judgeNext(cur, TCode.RPARENT);
                 break;
             case INTCON:
-                parseNumber(cur, table);
+                parseNumber(cur);
                 break;
             default:
-                parseLVal(cur, table);
+                parseLVal(cur);
         }
-        father.addChild(cur);
     }
 
-    private void parseNumber(TreeRoot father, SymbolTable table) throws ParserException {
-        TreeRoot cur = new TreeRoot(NCode.Number, table);
+    private void parseNumber(TreeRoot father) {
+        TreeRoot cur = new NumberNode();
+        father.addChild(cur);
         judgeNext(cur, TCode.INTCON);
-        father.addChild(cur);
     }
 
-    private void parseUnaryExp(TreeRoot father, SymbolTable table) throws ParserException {
-        TreeRoot cur = new TreeRoot(NCode.UnaryExp, table);
+    private void parseUnaryExp(TreeRoot father) {
+        TreeRoot cur = new UnaryExpNode();
+        father.addChild(cur);
         switch (peek()) {
             case PLUS:
             case MINU:
             case NOT:
-                parseUnaryOp(cur, table);
-                parseUnaryExp(cur, table);
+                parseUnaryOp(cur);
+                parseUnaryExp(cur);
                 break;
             case LPARENT:
             case INTCON:
-                parsePrimaryExp(cur, table);
+                parsePrimaryExp(cur);
                 break;
             default:
                 if (peek(1).equals(TCode.LPARENT)) {
@@ -385,66 +384,59 @@ public class Parser {
                     if (peek().equals(TCode.RPARENT)) {
                         addNextLeaf(cur);
                     } else {
-                        parseFuncRParams(cur, table);
+                        parseFuncRParams(cur);
                         judgeNext(cur, TCode.RPARENT);
                     }
                 } else {
-                    parsePrimaryExp(cur, table);
+                    parsePrimaryExp(cur);
                 }
         }
-        father.addChild(cur);
     }
 
-    private void parseUnaryOp(TreeRoot father, SymbolTable table) {
-        TreeRoot cur = new TreeRoot(NCode.UnaryOp, table);
+    private void parseUnaryOp(TreeRoot father) {
+        TreeRoot cur = new UnaryOpNode();
+        father.addChild(cur);
         addNextLeaf(cur);
-        father.addChild(cur);
     }
 
-    private void parseFuncRParams(TreeRoot father, SymbolTable table) throws ParserException {
-        TreeRoot cur = new TreeRoot(NCode.FuncRParams, table);
-        parseExp(cur, table);
+    private void parseFuncRParams(TreeRoot father) {
+        TreeRoot cur = new FuncRParamsNode();
+        father.addChild(cur);
+        parseExp(cur);
         while (peek().equals(TCode.COMMA)) {
             addNextLeaf(cur);
-            parseExp(cur, table);
+            parseExp(cur);
         }
-        father.addChild(cur);
     }
 
-    private void parseMulExp(TreeRoot father, SymbolTable table) throws ParserException {
-        TreeRoot cur = leftRecur(NCode.MulExp, NCode.UnaryExp, table);
-        father.addChild(cur);
+    private void parseMulExp(TreeRoot father) {
+        leftRecur(father, NCode.MulExp, NCode.UnaryExp);
     }
 
-    private void parseAddExp(TreeRoot father, SymbolTable table) throws ParserException {
-        TreeRoot cur = leftRecur(NCode.AddExp, NCode.MulExp, table);
-        father.addChild(cur);
+    private void parseAddExp(TreeRoot father) {
+        leftRecur(father, NCode.AddExp, NCode.MulExp);
     }
 
-    private void parseRelExp(TreeRoot father, SymbolTable table) throws ParserException {
-        TreeRoot cur = leftRecur(NCode.RelExp, NCode.AddExp, table);
-        father.addChild(cur);
+    private void parseRelExp(TreeRoot father) {
+        leftRecur(father, NCode.RelExp, NCode.AddExp);
     }
 
-    private void parseEqExp(TreeRoot father, SymbolTable table) throws ParserException {
-        TreeRoot cur = leftRecur(NCode.EqExp, NCode.RelExp, table);
-        father.addChild(cur);
+    private void parseEqExp(TreeRoot father) {
+        leftRecur(father, NCode.EqExp, NCode.RelExp);
     }
 
-    private void parseLAndExp(TreeRoot father, SymbolTable table) throws ParserException {
-        TreeRoot cur = leftRecur(NCode.LAndExp, NCode.EqExp, table);
-        father.addChild(cur);
+    private void parseLAndExp(TreeRoot father) {
+        leftRecur(father, NCode.LAndExp, NCode.EqExp);
     }
 
-    private void parseLOrExp(TreeRoot father, SymbolTable table) throws ParserException {
-        TreeRoot cur = leftRecur(NCode.LOrExp, NCode.LAndExp, table);
-        father.addChild(cur);
+    private void parseLOrExp(TreeRoot father) {
+        leftRecur(father, NCode.LOrExp, NCode.LAndExp);
     }
 
-    private void parseConstExp(TreeRoot father, SymbolTable table) throws ParserException {
-        TreeRoot cur = new TreeRoot(NCode.ConstExp, table);
-        parseAddExp(cur, table);
+    private void parseConstExp(TreeRoot father) {
+        TreeRoot cur = new ConstExpNode();
         father.addChild(cur);
+        parseAddExp(cur);
     }
 
     private void judgeNext(TreeRoot father, TCode code) {
@@ -484,43 +476,67 @@ public class Parser {
         father.addChild(new TreeLeaf(next()));
     }
 
-    private TreeRoot leftRecur(NCode whole, NCode recur, SymbolTable table)
-            throws ParserException {
-        TreeRoot cur = new TreeRoot(whole, table);
-        parse4NCode(cur, recur, table);
+    private void leftRecur(TreeRoot father, NCode whole, NCode recur) {
+        TreeRoot cur = create4NCode(whole);
+        assert cur != null;
+        SymbolTable table = father.getTable();
+        cur.setTable(table);
+        parse4NCode(cur, recur);
         TreeRoot temp;
         while (CodeClassifier.isSeparator(whole, peek())) {
-            temp = new TreeRoot(whole, table);
+            temp = create4NCode(whole);
+            assert temp != null;
             temp.addChild(cur);
+            temp.setTable(table);
             addNextLeaf(temp);
-            parse4NCode(temp, recur, table);
+            parse4NCode(temp, recur);
             cur = temp;
         }
-        return cur;
+        father.addChild(cur);
     }
 
-    private void parse4NCode(TreeRoot cur, NCode code, SymbolTable table)
-            throws ParserException {
+    private void parse4NCode(TreeRoot cur, NCode code) {
         switch (code) {
             case LAndExp:
-                parseLAndExp(cur, table);
+                parseLAndExp(cur);
                 break;
             case EqExp:
-                parseEqExp(cur, table);
+                parseEqExp(cur);
                 break;
             case RelExp:
-                parseRelExp(cur, table);
+                parseRelExp(cur);
                 break;
             case AddExp:
-                parseAddExp(cur, table);
+                parseAddExp(cur);
                 break;
             case MulExp:
-                parseMulExp(cur, table);
+                parseMulExp(cur);
                 break;
             case UnaryExp:
-                parseUnaryExp(cur, table);
+                parseUnaryExp(cur);
                 break;
             default:
         }
+    }
+
+    private TreeRoot create4NCode(NCode code) {
+        switch (code) {
+            case LOrExp:
+                return new LOrExpNode();
+            case LAndExp:
+                return new LAndExpNode();
+            case EqExp:
+                return new EqExpNode();
+            case RelExp:
+                return new RelExpNode();
+            case AddExp:
+                return new AddExpNode();
+            case MulExp:
+                return new MulExpNode();
+            case UnaryExp:
+                return new UnaryExpNode();
+            default:
+        }
+        return null;
     }
 }

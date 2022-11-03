@@ -1,4 +1,4 @@
-package main.models.common.llvm;
+package main.models.common.llvm.define;
 
 public interface Define {
     void print();

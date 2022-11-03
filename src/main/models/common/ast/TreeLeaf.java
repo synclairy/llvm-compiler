@@ -10,6 +10,11 @@ public class TreeLeaf implements TreeNode {
         Printer.getInstance().print(token.toString());
     }
 
+    @Override
+    public void llvm() {
+
+    }
+
     public TreeLeaf(Token token) {
         this.token = token;
     }

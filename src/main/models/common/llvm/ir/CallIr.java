@@ -1,6 +1,7 @@
-package main.models.common.llvm;
+package main.models.common.llvm.ir;
 
 import main.models.common.ast.TCode;
+import main.models.common.llvm.IrList;
 import main.models.common.symbol.FuncSymbol;
 
 import java.util.ArrayList;
