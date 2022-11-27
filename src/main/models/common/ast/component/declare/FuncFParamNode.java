@@ -12,6 +12,7 @@ public class FuncFParamNode extends TreeRoot {
 
     @Override
     public void llvm() {
+        fillLineByIndex(1);
         getTable().fillParamName(getTokenByIndex(1).getValue());
         if (TCode.LBRACK.equals(getCodeByIndex(2))) {
             getTable().fillDimension(0);

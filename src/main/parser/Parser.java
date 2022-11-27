@@ -17,7 +17,6 @@ import main.utils.CodeClassifier;
 public class Parser {
     private TreeRoot root;
     private TokenSequence tokens;
-    private final ErrorInfoList eil;
 
     public TreeRoot getRoot() {
         return root;
@@ -25,7 +24,6 @@ public class Parser {
 
     public Parser() {
         tokens = null;
-        eil = ErrorInfoList.getInstance();
     }
 
     public void parse(TokenSequence tokens, SymbolTable global) {
@@ -160,12 +158,10 @@ public class Parser {
         parseFuncType(cur);
         judgeNext(cur, TCode.IDENFR);
         judgeNext(cur, TCode.LPARENT);
-        if (peek().equals(TCode.RPARENT)) {
-            addNextLeaf(cur);
-        } else {
+        if (peek().equals(TCode.INTTK)) {
             parseFuncFParams(cur);
-            judgeNext(cur, TCode.RPARENT);
         }
+        judgeNext(cur, TCode.RPARENT);
         parseBlock(cur);
     }
 
@@ -227,19 +223,19 @@ public class Parser {
         if (peek().equals(TCode.CONSTTK) || peek().equals(TCode.INTTK)) {
             parseDecl(father);
         } else {
-            parseStmt(father, false);
+            parseStmt(father);
         }
     }
 
-    private void parseStmt(TreeRoot father, boolean inLoop) {
+    private void parseStmt(TreeRoot father) {
         TreeRoot cur = new StmtNode();
         father.addChild(cur);
         switch (peek()) {
             case PRINTFTK:
                 addNextLeaf(cur);
                 int line = tokens.getLastLine();
-                int cnt = CharClassifier.countArgs(tokens.getPeekValue());
                 judgeNext(cur, TCode.LPARENT);
+                int cnt = CharClassifier.countArgs(tokens.getPeekValue());
                 judgeNext(cur, TCode.STRCON);
                 while (peek().equals(TCode.COMMA)) {
                     addNextLeaf(cur);
@@ -247,26 +243,21 @@ public class Parser {
                     cnt--;
                 }
                 if (cnt != 0) {
-                    eil.addError('l', line);
+                    addError('l', line);
                 }
                 judgeNext(cur, TCode.RPARENT);
                 judgeNext(cur, TCode.SEMICN);
                 break;
             case RETURNTK:
                 addNextLeaf(cur);
-                if (peek().equals(TCode.SEMICN)) {
-                    addNextLeaf(cur);
-                } else {
+                if (CodeClassifier.isFirstOfExp(peek())) {
                     parseExp(cur);
-                    judgeNext(cur, TCode.SEMICN);
                 }
+                judgeNext(cur, TCode.SEMICN);
                 break;
             case BREAKTK:
             case CONTINUETK:
                 addNextLeaf(cur);
-                if (!inLoop) {
-                    eil.addError('m', tokens.getLastLine());
-                }
                 judgeNext(cur, TCode.SEMICN);
                 break;
             case WHILETK:
@@ -274,17 +265,17 @@ public class Parser {
                 judgeNext(cur, TCode.LPARENT);
                 parseCond(cur);
                 judgeNext(cur, TCode.RPARENT);
-                parseStmt(cur, true);
+                parseStmt(cur);
                 break;
             case IFTK:
                 addNextLeaf(cur);
                 judgeNext(cur, TCode.LPARENT);
                 parseCond(cur);
                 judgeNext(cur, TCode.RPARENT);
-                parseStmt(cur, inLoop);
+                parseStmt(cur);
                 if (peek().equals(TCode.ELSETK)) {
                     addNextLeaf(cur);
-                    parseStmt(cur,inLoop);
+                    parseStmt(cur);
                 }
                 break;
             case LBRACE:
@@ -384,7 +375,9 @@ public class Parser {
                     if (peek().equals(TCode.RPARENT)) {
                         addNextLeaf(cur);
                     } else {
-                        parseFuncRParams(cur);
+                        if (peek() != TCode.SEMICN) {
+                            parseFuncRParams(cur);
+                        }
                         judgeNext(cur, TCode.RPARENT);
                     }
                 } else {
@@ -445,14 +438,17 @@ public class Parser {
         } else {
             int line = tokens.getLastLine();
             switch (code) {
-                case COMMA:
-                    eil.addError('i', line);
+                case SEMICN:
+                    addError('i', line);
+                    father.addChild(new TreeLeaf(new Token(TCode.SEMICN, "'")));
                     break;
                 case RPARENT:
-                    eil.addError('j', line);
+                    addError('j', line);
+                    father.addChild(new TreeLeaf(new Token(TCode.RPARENT, ")")));
                     break;
                 case RBRACK:
-                    eil.addError('k', line);
+                    addError('k', line);
+                    father.addChild(new TreeLeaf(new Token(TCode.RBRACK, "]")));
                     break;
                 default:
                     //TODO: throw new ParserException(line);
@@ -538,5 +534,9 @@ public class Parser {
             default:
         }
         return null;
+    }
+    
+    private void addError(char c, int l) {
+        ErrorInfoList.getInstance().addError(c, l);
     }
 }

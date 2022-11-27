@@ -26,4 +26,13 @@ public class PrimaryExpNode extends TreeRoot {
             return getRootByIndex(1).synthesize();
         }
     }
+
+    @Override
+    public int getLevel() {
+        if (getChildren().size() == 3) {
+            return getRootByIndex(1).getLevel();
+        } else {
+            return getRootByIndex(0).getLevel();
+        }
+    }
 }

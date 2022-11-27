@@ -16,6 +16,7 @@ public class VarDefNode extends TreeRoot {
     public void llvm() {
         Token token = getFirstToken();
         getTable().fillType(TCode.INTTK);
+        fillLineByIndex(0);
         getTable().fillName(token.getValue());
         if (TCode.LBRACK.equals(getCodeByIndex(1))) {
             getTable().fillDimension(getRootByIndex(2).synthesize());

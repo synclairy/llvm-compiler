@@ -25,19 +25,22 @@ public class UnaryExpNode extends TreeRoot {
             }
         } else {
             ArrayList<String> params = new ArrayList<>();
+            ArrayList<Integer> levels = new ArrayList<>();
             if (getChildren().size() != 3) {
-                ArrayList<TreeNode> temp = ((TreeRoot) getChildren().get(2)).getChildren();
+                ArrayList<TreeNode> temp = (getRootByIndex(2)).getChildren();
                 for (TreeNode node : temp) {
-                    if (node instanceof TreeRoot) {
-                        ((TreeRoot) node).llvm();
+                    if (node instanceof ExpNode) {
+                        node.llvm();
                         params.add(lastOp());
+                        levels.add(((ExpNode) node).getLevel());
                     }
                 }
             }
+            fillLineByIndex(0);
             if (getFirstToken().getCode().equals(TCode.GETINTTK)) {
-                getGlobal().callFunc("getint", params);
+                getGlobal().callFunc("getint", params, levels);
             } else {
-                getGlobal().callFunc(getFirstToken().getValue(), params);
+                getGlobal().callFunc(getFirstToken().getValue(), params, levels);
             }
         }
     }
@@ -55,5 +58,15 @@ public class UnaryExpNode extends TreeRoot {
         } else {
             return 0;
         }
+    }
+
+    @Override
+    public int getLevel() {
+        if (getChildren().size() > 2) {
+            return getTable().getLevel(getFirstToken().getValue());
+        } else if (getChildren().size() == 2) {
+            return getRootByIndex(1).getLevel();
+        }
+        return getRootByIndex(0).getLevel();
     }
 }

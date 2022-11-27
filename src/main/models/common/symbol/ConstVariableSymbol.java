@@ -14,6 +14,7 @@ public class ConstVariableSymbol implements SymbolItem {
             value = values.get(0);
         }
     }
+
     public ConstVariableSymbol(String name) {
         this.name = name;
     }

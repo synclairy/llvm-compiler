@@ -33,6 +33,16 @@ public abstract class TreeRoot implements TreeNode {
         return 0;
     }
 
+    public int getLevel() {
+        if (children.size() > 1) {
+            return 0;
+        } else if (children.get(0) instanceof TreeLeaf) {
+            return 0;
+        } else {
+            return getRootByIndex(0).getLevel();
+        }
+    }
+
     public void travelSal1(NCode code) {
         for (TreeNode node : children) {
             if (node instanceof TreeRoot) {
@@ -104,6 +114,11 @@ public abstract class TreeRoot implements TreeNode {
         return getTokenByIndex(i).getCode();
     }
 
+    public void fillLineByIndex(int i) {
+        Token token = getTokenByIndex(i);
+        SymbolTable.fillLine(token.getLine());
+    }
+
     public String lastOp() {
         return IrList.lastOp();
     }
@@ -138,4 +153,5 @@ public abstract class TreeRoot implements TreeNode {
     public static void setGlobal(SymbolTable global) {
         TreeRoot.global = global;
     }
+
 }

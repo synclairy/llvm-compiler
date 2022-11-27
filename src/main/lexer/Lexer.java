@@ -4,7 +4,6 @@ import main.models.common.handler.ErrorInfoList;
 import main.models.common.ast.Token;
 import main.models.common.ast.TokenSequence;
 import main.models.common.ast.TCode;
-import main.models.exceptions.LexerException;
 import main.utils.CharClassifier;
 
 import java.io.BufferedReader;
@@ -29,13 +28,13 @@ public class Lexer {
         }
     }
 
-    public void analyse() throws LexerException {
+    public void analyse() {
         while (!end) {
             generateToken();
         }
     }
 
-    public void generateToken() throws LexerException {
+    public void generateToken() {
         char curChar = next();
         StringBuilder curToken = new StringBuilder(String.valueOf(curChar));
         TCode code;
@@ -53,9 +52,7 @@ public class Lexer {
                 tokens.add(new Token(code, curToken.toString()));
             }
         } else if (Character.isDigit(curChar)) {
-            if (curChar == '0' && Character.isDigit(peek())) {
-                throw new LexerException(tokens.getLine());
-            } else {
+            if (curChar != '0' || !Character.isDigit(peek())) {
                 while (Character.isDigit(peek())) {
                     curToken.append(next());
                 }
@@ -68,12 +65,19 @@ public class Lexer {
                     curToken.append(next());
                     if (p == '\\' && peek() != 'n') {
                         ErrorInfoList.getInstance().addError('a', tokens.getLine());
+                        if (peek() != '\"') {
+                            next();
+                        }
                     }
                     if (p == '%' && peek() != 'd') {
                         ErrorInfoList.getInstance().addError('a', tokens.getLine());
+                        if (peek() != '\"') {
+                            next();
+                        }
                     }
                 } else {
                     ErrorInfoList.getInstance().addError('a', tokens.getLine());
+                    next();
                 }
             }
             curToken.append(next());
@@ -86,7 +90,7 @@ public class Lexer {
         }
     }
 
-    public void doubleSymbolManipulation(String single, String twin) throws LexerException {
+    public void doubleSymbolManipulation(String single, String twin) {
         if (twin.equals("//")) {
             do {
                 next();
@@ -98,16 +102,10 @@ public class Lexer {
                 c1 = c2;
                 c2 = next();
             } while ((c1 != '*' || c2 != '/') && !end);
-            if (end) {
-                throw new LexerException(tokens.getLine());
-            }
         } else {
             TCode code = CharClassifier.reserve(twin);
             if (code == null) {
                 code = CharClassifier.reserve(single);
-                if (code == null) {
-                    throw new LexerException(tokens.getLine());
-                }
                 tokens.add(new Token(code, single));
             } else {
                 next();

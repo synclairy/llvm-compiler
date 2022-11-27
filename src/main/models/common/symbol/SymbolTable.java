@@ -2,11 +2,14 @@ package main.models.common.symbol;
 
 import main.models.common.ast.NCode;
 import main.models.common.ast.TCode;
+import main.models.common.handler.ErrorInfoList;
+import main.models.common.llvm.Labels;
+import main.models.common.llvm.ir.AllocaIr;
+import main.models.common.llvm.ir.BrIr;
 import main.models.common.llvm.ir.CallIr;
 import main.models.common.llvm.ir.IR;
 import main.models.common.llvm.IrList;
 import main.models.common.llvm.ir.LoadIr;
-import main.models.common.llvm.ir.ReturnIr;
 import main.models.common.llvm.ir.StoreIr;
 import main.models.common.llvm.ir.SubIr;
 
@@ -24,8 +27,13 @@ public class SymbolTable {
     private int d2;
     private int paramsNum;
     private int count;
+    private static int line;
+    private static boolean retInt = false;
     private String paramName;
-    private int needRet = -1;
+
+    public static void setRetInt(boolean retInt) {
+        SymbolTable.retInt = retInt;
+    }
 
     public SymbolTable(SymbolTable father) {
         this.children = new ArrayList<>();
@@ -35,43 +43,91 @@ public class SymbolTable {
         initValues = new ArrayList<>();
     }
 
-    public void callFunc(String name, ArrayList<String> p) {
+    public int getLevel(String name) {
         SymbolItem item = getSymbol(name);
-        if (item instanceof FuncSymbol) {
-            IrList.getInstance().addIr(new CallIr((FuncSymbol) item, p));
+        if (item instanceof VariableSymbol || item instanceof ConstVariableSymbol) {
+            return 0;
+        } else if (item instanceof ArraySymbol) {
+            return ((ArraySymbol) item).getLevel();
+        } else if (item instanceof FuncSymbol) {
+            if (((FuncSymbol) item).getReturnType().equals(TCode.VOIDTK)) {
+                return -1;
+            }
         }
-        //TODO
+        return 0;
     }
 
-    public void declareParams() {
+    public void callFunc(String name, ArrayList<String> p, ArrayList<Integer> levels) {
+        SymbolItem item = getSymbol(name);
+        if (item instanceof FuncSymbol) {
+            ArrayList<Integer> requires = ((FuncSymbol) item).getLevels();
+            if (levels.size() != requires.size()) {
+                addError('d');
+            } else {
+                for (int i = 0; i < levels.size(); i++) {
+                   if (!levels.get(i).equals(requires.get(i))) {
+                       addError('e');
+                       return;
+                   }
+                }
+                addIr(new CallIr((FuncSymbol) item, p));
+            }
+        }
+    }
+
+    public void declareParams(Labels labels) {
         for (int i = 0; i < paramsNum; i++) {
             items.get(i).declare("param");
         }
         if (father.isGlobal()) {
-            IrList.getInstance().newBlock(IrList.newReg());
+            IrList.getInstance().newBlock();
+            labels.updateRetReg();
+            addIr(new AllocaIr(IrList.lastOp(), "result_a0"));
         }
         for (int i = 0; i < paramsNum; i++) {
             items.get(i).declare("paramStore");
         }
     }
 
-    public void storeSymbol(String name, String reg) {
+    public void returnValue(String reg, Labels labels) {
+        if (reg == null) {
+            if (retInt) {
+                addError('g');
+            } else {
+                addIr(new BrIr(labels, "ret"));
+            }
+        } else {
+            if (!retInt) {
+                addError('f');
+            } else {
+                addIr(new StoreIr(reg, labels));
+                addIr(new BrIr(labels, "ret"));
+            }
+        }
+    }
+
+    public void storeSymbol(String name, String reg, int d1, int d2) {
         if (name != null) {
-            addIr(new StoreIr(reg, getSymbol(name).getReg()));
+            SymbolItem item = getSymbol(name);
+            if (item instanceof ConstVariableSymbol || item instanceof ConstArraySymbol) {
+                addError('h');
+            } else if (item instanceof VariableSymbol) {
+                addIr(new StoreIr(reg, item.getReg()));
+            }
+            //TODO: array
         } else {
             addIr(new StoreIr(reg, getSymbol(this.name).getReg()));
         }
     }
 
     public void loadSymbol(String name) {
-        int index;
         SymbolItem sym = getSymbol(name);
         if (sym == null) {
             //TODO
         } else {
             //TODO
             if (sym instanceof VariableSymbol) {
-                addIr(new LoadIr(getSymbol(name).getReg()));
+                addIr(new LoadIr(sym.getReg()));
             } else if (sym instanceof ConstVariableSymbol) {
                 int v = ((ConstVariableSymbol) sym).getValue();
                 if (v >= 0) {
@@ -95,13 +151,6 @@ public class SymbolTable {
             }
         }
         return 0;
-    }
-
-    public void blockOver() {
-        if (father.needRet > needRet) {
-            father.needRet = -1;
-            addIr(new ReturnIr());
-        }
     }
 
     public int getVarValue(String name) {
@@ -134,6 +183,10 @@ public class SymbolTable {
         this.name = name;
     }
 
+    public static void fillLine(int line) {
+        SymbolTable.line = line;
+    }
+
     public void fillDimension(int n) {
         if (count == 0) {
             d1 = n;
@@ -143,14 +196,15 @@ public class SymbolTable {
         count++;
     }
 
-    public void setNeedRet(int needRet) {
-        this.needRet = needRet;
-    }
-
     public void fillOver(NCode code) {
         SymbolItem item;
         switch (code) {
             case FuncFParam:
+                for (SymbolItem i : params) {
+                    if (i.getName().equals(paramName)) {
+                        addError('b');
+                    }
+                }
                 if (count == 0) {
                     params.add(new VariableSymbol(paramName));
                 } else {
@@ -175,11 +229,14 @@ public class SymbolTable {
                 }
                 break;
             default:
-                needRet = 0;
+                retInt = this.code.equals(TCode.INTTK);
                 item = new FuncSymbol(this.code, name, params);
                 break;
         }
         item.setValues(initValues);
+        if (getLocalSymbol(name) != null) {
+            addError('b');
+        }
         if (isGlobal()) {
             item.declare("global");
         } else {
@@ -248,9 +305,23 @@ public class SymbolTable {
             }
         }
         if (isGlobal()) {
-            return null;
+            addError('c');
+            return new VariableSymbol("placeHolder");
         } else {
             return father.getSymbol(name);
         }
+    }
+
+    public SymbolItem getLocalSymbol(String name) {
+        for (SymbolItem item : items) {
+            if (item.getName().equals(name)) {
+                return item;
+            }
+        }
+        return null;
+    }
+
+    private void addError(char t) {
+        ErrorInfoList.getInstance().addError(t, line);
     }
 }

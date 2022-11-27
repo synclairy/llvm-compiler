@@ -23,6 +23,13 @@ public class FuncSymbol implements SymbolItem {
         this.name = name;
         this.params = params;
         this.levels = new ArrayList<>();
+        for (SymbolItem item : params) {
+            if (item instanceof VariableSymbol) {
+                levels.add(0);
+            } else if (item instanceof ArraySymbol) {
+                levels.add(((ArraySymbol) item).getLevel());
+            }
+        }
     }
 
     public FuncSymbol(TCode returnType, ArrayList<Integer> levels, String name) {
@@ -32,8 +39,8 @@ public class FuncSymbol implements SymbolItem {
         isLib = true;
     }
 
-    public int getLevelSize() {
-        return levels.size();
+    public ArrayList<Integer> getLevels() {
+        return levels;
     }
 
     @Override
@@ -52,13 +59,6 @@ public class FuncSymbol implements SymbolItem {
         if (isLib) {
             IrList.getInstance().addFuncDecl(new FunctionDeclare(isVoid, name, levels));
         } else {
-            for (SymbolItem item : params) {
-                if (item instanceof VariableSymbol) {
-                    levels.add(0);
-                } else if (item instanceof ArraySymbol) {
-                    levels.add(((ArraySymbol) item).getLevel());
-                }
-            }
             IrList.getInstance().addFuncDef(new FunctionDefine(isVoid, name, levels));
         }
     }

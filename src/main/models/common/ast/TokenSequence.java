@@ -17,6 +17,14 @@ public class TokenSequence {
         }
     }
 
+    public TCode peek(int n) {
+        if (n + pos < num) {
+            return tokens.get(pos + n).getCode();
+        } else {
+            return TCode.EOF;
+        }
+    }
+
     public String peekName() {
         if (pos < num) {
             return tokens.get(pos).getValue();
@@ -33,14 +41,6 @@ public class TokenSequence {
         }
     }
 
-    public TCode peek(int n) {
-        if (n + pos < num) {
-            return tokens.get(pos + n).getCode();
-        } else {
-            return TCode.EOF;
-        }
-    }
-
     public Token next() {
         if (pos == num) {
             return null;
@@ -51,7 +51,8 @@ public class TokenSequence {
 
     public int posCmp(TCode a, TCode b) {
         int temp = pos;
-        while (temp < num) {
+        int line = tokens.get(pos).getLine();
+        while (temp < num && tokens.get(temp).getLine() == line) {
             if (tokens.get(temp).getCode().equals(a)) {
                 return -1;
             }

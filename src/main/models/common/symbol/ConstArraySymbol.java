@@ -1,6 +1,5 @@
 package main.models.common.symbol;
 
-
 import java.util.ArrayList;
 
 public class ConstArraySymbol implements SymbolItem {

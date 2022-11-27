@@ -25,11 +25,15 @@ public class CharClassifier {
                 continue;
             }
             if (s.charAt(i) == '%') {
-                i++;
-                chars.add(null);
+                if (s.charAt(i + 1) == 'd') {
+                    i++;
+                    chars.add(null);
+                }
             } else if (s.charAt(i) == '\\') {
-                i++;
-                chars.add("10");
+                if (s.charAt(i + 1) == 'n') {
+                    i++;
+                    chars.add("10");
+                }
             } else {
                 int n = s.charAt(i);
                 chars.add(String.valueOf(n));

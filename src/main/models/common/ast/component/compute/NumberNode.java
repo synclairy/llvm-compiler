@@ -19,4 +19,9 @@ public class NumberNode extends TreeRoot {
     public int synthesize() {
         return Integer.parseInt(getFirstToken().getValue());
     }
+
+    @Override
+    public int getLevel() {
+        return 0;
+    }
 }

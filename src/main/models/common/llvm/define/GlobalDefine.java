@@ -11,7 +11,6 @@ public class GlobalDefine implements Define {
         this.item = item;
     }
 
-
     @Override
     public String toString() {
         if (item instanceof VariableSymbol) {

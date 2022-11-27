@@ -25,7 +25,7 @@ public class ArraySymbol implements SymbolItem {
         if (dCount == 1) {
             return 1;
         } else {
-            return d2;
+            return d2 + 1;
         }
     }
 

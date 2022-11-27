@@ -46,8 +46,8 @@ public class IrList {
         IrList.regCount = 0;
     }
 
-    public void newBlock(String n) {
-        func.newBlock(n);
+    public void newBlock() {
+        func.newBlock(IrList.newReg());
     }
 
     public static String newReg() {
@@ -58,6 +58,10 @@ public class IrList {
 
     public static String lastOp() {
         return lastOp;
+    }
+
+    public static String preview() {
+        return "%" + IrList.regCount;
     }
 
     public static void setLastOp(String lastOp) {

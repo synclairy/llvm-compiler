@@ -23,4 +23,32 @@ public class CodeClassifier {
                 return false;
         }
     }
+
+    public static boolean isFirstOfExp(TCode t) {
+        switch (t) {
+            case IDENFR:
+            case INTCON:
+            case LPARENT:
+            case PLUS:
+            case MINU:
+            case NOT:
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    public static boolean isBr(TCode t) {
+        if (t == null) {
+            return false;
+        }
+        switch (t) {
+            case BREAKTK:
+            case CONTINUETK:
+            case RETURNTK:
+                return true;
+            default:
+                return false;
+        }
+    }
 }

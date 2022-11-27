@@ -18,4 +18,8 @@ public class ErrorInfo implements Comparable<ErrorInfo> {
     public int compareTo(ErrorInfo o) {
         return this.line - o.line;
     }
+
+    public int getLine() {
+        return line;
+    }
 }

@@ -16,7 +16,7 @@ public class InitValNode extends TreeRoot {
                 getTable().fillInitValue(getRootByIndex(0).synthesize());
             } else {
                 getRootByIndex(0).llvm();
-                getTable().storeSymbol(null, lastOp());
+                getTable().storeSymbol(null, lastOp(), 0, 0);
             }
         } else {
             travelSal1(NCode.InitVal);

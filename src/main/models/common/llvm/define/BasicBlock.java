@@ -19,7 +19,7 @@ public class BasicBlock {
     }
 
     public void print() {
-        //Printer.getInstance().print(blockNum.substring(1) + ":\n");
+        Printer.getInstance().print("; <label>:" + blockNum.substring(1) + ":\n");
         for (IR ir : irs) {
             Printer.getInstance().print(ir.toString());
         }
