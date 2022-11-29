@@ -1,5 +1,6 @@
 package main.models.common.llvm.define;
 
+import main.models.common.llvm.ir.BrIr;
 import main.models.common.llvm.ir.IR;
 import main.utils.Printer;
 
@@ -20,6 +21,9 @@ public class FunctionDefine implements Define {
     }
 
     public void newBlock(String n) {
+        if (block != null && !block.isValid()) {
+            block.addIr(new BrIr(n));
+        }
         block = new BasicBlock(n);
         blocks.add(block);
     }

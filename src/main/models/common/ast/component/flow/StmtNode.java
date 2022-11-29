@@ -28,6 +28,7 @@ public class StmtNode extends TreeRoot {
                 } else {
                     addIr(new BrIr(labels, "break"));
                 }
+                labels.setInterrupted(true);
                 break;
             case CONTINUETK:
                 if (labels.getCondLabel() == null) {
@@ -35,6 +36,7 @@ public class StmtNode extends TreeRoot {
                 } else {
                     addIr(new BrIr(labels, "continue"));
                 }
+                labels.setInterrupted(true);
                 break;
             case IFTK:
                 Labels child = new Labels(labels);
@@ -42,20 +44,32 @@ public class StmtNode extends TreeRoot {
                     ((CondNode) getRootByIndex(2)).llvmWithLabels(child, "ifElseJudge");
                     child.updateIfLabel();
                     ((StmtNode) getRootByIndex(4)).llvmWithLabels(child);
+                    if (!child.isInterrupted()) {
+                        addIr(new BrIr(child, "ifEnd"));
+                    }
                     child.updateElseLabel();
                     ((StmtNode) getRootByIndex(6)).llvmWithLabels(child);
+                    if (!child.isInterrupted()) {
+                        addIr(new BrIr(child, "elseEnd"));
+                    }
                 } else {
                     ((CondNode) getRootByIndex(2)).llvmWithLabels(child, "ifJudge");
                     child.updateIfLabel();
                     ((StmtNode) getRootByIndex(4)).llvmWithLabels(child);
+                    if (!child.isInterrupted()) {
+                        addIr(new BrIr(child, "ifEnd"));
+                    }
                 }
-                labels.updateIfEnd();
+                child.updateIfEnd();
                 break;
             case WHILETK:
                 child = new Labels(labels);
                 ((CondNode) getRootByIndex(2)).llvmWithLabels(child, "whileJudge");
                 child.updateBodyLabel();
                 ((StmtNode) getRootByIndex(4)).llvmWithLabels(child);
+                if (!child.isInterrupted()) {
+                    addIr(new BrIr(child, "whileBegin"));
+                }
                 child.updateWhileEnd();
                 break;
             case RETURNTK:
@@ -66,6 +80,7 @@ public class StmtNode extends TreeRoot {
                 } else {
                     getTable().returnValue(null, labels);
                 }
+                labels.setInterrupted(true);
                 break;
             case IDENFR:
                 TreeNode lv = getChildren().get(0);

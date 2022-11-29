@@ -4,7 +4,9 @@ import main.models.common.ast.NCode;
 import main.models.common.ast.TCode;
 import main.models.common.ast.TreeNode;
 import main.models.common.ast.TreeRoot;
+import main.models.common.llvm.ir.ICmpIr;
 import main.models.common.llvm.ir.SubIr;
+import main.models.common.llvm.ir.ZextIr;
 
 import java.util.ArrayList;
 
@@ -22,6 +24,9 @@ public class UnaryExpNode extends TreeRoot {
             getRootByIndex(1).llvm();
             if (getFirstToken().getCode().equals(TCode.MINU)) {
                 addIr(new SubIr("0", lastOp()));
+            } else if (getFirstToken().getCode().equals(TCode.NOT)) {
+                addIr(new ICmpIr("eq", lastOp(), "0"));
+                addIr(new ZextIr(1, 32, lastOp()));
             }
         } else {
             ArrayList<String> params = new ArrayList<>();

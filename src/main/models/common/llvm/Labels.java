@@ -18,13 +18,23 @@ public class Labels {
 
     private final ArrayList<String> orsLabel;
 
+    private boolean interrupted = false;
+
+    public boolean isInterrupted() {
+        return interrupted;
+    }
+
+    public void setInterrupted(boolean interrupted) {
+        this.interrupted = interrupted;
+    }
+
     public String getOrLabel(String s) {
         return orsLabel.get(Integer.parseInt(s));
     }
 
-    public void updateOrsLabel(String label) {
+    public void updateOrsLabel() {
         IrList.getInstance().newBlock();
-        orsLabel.add(label);
+        orsLabel.add(IrList.lastOp());
     }
 
     public Labels(Labels father) {

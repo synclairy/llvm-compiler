@@ -5,7 +5,7 @@ import main.models.common.ast.TreeRoot;
 import main.models.common.llvm.IrList;
 import main.models.common.llvm.Labels;
 import main.models.common.llvm.ir.BrIr;
-import main.models.common.llvm.ir.ZextIr;
+import main.models.common.llvm.ir.ICmpIr;
 
 import java.util.ArrayList;
 
@@ -28,20 +28,26 @@ public class CondNode extends TreeRoot {
         }
         for (int i = 0; i < eqs.size(); i++) {
             if (i != 0) {
-                labels.updateOrsLabel(lastOp());
+                labels.updateOrsLabel();
             }
             for (int j = 0; j < eqs.get(i).size(); j++) {
                 if (j != 0) {
                     IrList.getInstance().newBlock();
                 }
                 eqs.get(i).get(j).llvm();
-                addIr(new ZextIr(32, 1, lastOp()));
-                if (j != eqs.get(i).size() - 1) {
-                    addIr(new BrIr(type, labels, IrList.preview(), String.valueOf(i)));
-                } else if (i != eqs.size() - 1) {
-                    addIr(new BrIr(type, labels, "body", String.valueOf(i)));
+                addIr(new ICmpIr("ne", lastOp(), "0"));
+                if (i != eqs.size() - 1) {
+                    if (j != eqs.get(i).size() - 1) {
+                        addIr(new BrIr(type, labels, IrList.preview(), String.valueOf(i)));
+                    } else {
+                        addIr(new BrIr(type, labels, "body", String.valueOf(i)));
+                    }
                 } else {
-                    addIr(new BrIr(type, labels, "body", "end"));
+                    if (j != eqs.get(i).size() - 1) {
+                        addIr(new BrIr(type, labels, IrList.preview(), "end"));
+                    } else {
+                        addIr(new BrIr(type, labels, "body", "end"));
+                    }
                 }
             }
         }
