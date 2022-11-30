@@ -21,8 +21,10 @@ public class EqExpNode extends TreeRoot {
             String op2 = lastOp();
             if (getTokenByIndex(1).getCode().equals(TCode.EQL)) {
                 addIr(new ICmpIr("eq", op1, op2));
-                addIr(new ZextIr(1, 32, lastOp()));
+            } else {
+                addIr(new ICmpIr("ne", op1, op2));
             }
+            addIr(new ZextIr(1, 32, lastOp()));
         }
     }
 }
