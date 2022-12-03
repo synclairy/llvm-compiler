@@ -17,7 +17,6 @@ import java.util.ArrayList;
 
 public class SymbolTable {
     private ArrayList<SymbolItem> items;
-    private final ArrayList<SymbolTable> children;
     private ArrayList<SymbolItem> params;
     private ArrayList<Integer> initValues;
     private final SymbolTable father;
@@ -36,25 +35,10 @@ public class SymbolTable {
     }
 
     public SymbolTable(SymbolTable father) {
-        this.children = new ArrayList<>();
         this.father = father;
         items = new ArrayList<>();
         params = new ArrayList<>();
         initValues = new ArrayList<>();
-    }
-
-    public int getLevel(String name) {
-        SymbolItem item = getSymbol(name);
-        if (item instanceof VariableSymbol || item instanceof ConstVariableSymbol) {
-            return 0;
-        } else if (item instanceof ArraySymbol) {
-            return ((ArraySymbol) item).getLevel();
-        } else if (item instanceof FuncSymbol) {
-            if (((FuncSymbol) item).getReturnType().equals(TCode.VOIDTK)) {
-                return -1;
-            }
-        }
-        return 0;
     }
 
     public void callFunc(String name, ArrayList<String> p, ArrayList<Integer> levels) {
@@ -106,73 +90,68 @@ public class SymbolTable {
         }
     }
 
-    public void storeSymbol(String name, String reg, int d1, int d2) {
+    public void storeSymbol(String name, String reg, String d1, String d2) {
         if (name != null) {
             SymbolItem item = getSymbol(name);
             if (item instanceof ConstVariableSymbol || item instanceof ConstArraySymbol) {
                 addError('h');
             } else if (item instanceof VariableSymbol) {
                 addIr(new StoreIr(reg, item.getReg()));
+            } else if (item instanceof ArraySymbol) {
+                ((ArraySymbol) item).gep(d1, d2);
+                addIr(new StoreIr(reg, IrList.lastOp()));
             }
-            //TODO: array
         } else {
-            addIr(new StoreIr(reg, getSymbol(this.name).getReg()));
+            SymbolItem item = getSymbol(this.name);
+            if (item instanceof VariableSymbol) {
+                addIr(new StoreIr(reg, item.getReg()));
+            } else if (item instanceof ArraySymbol) {
+                ((ArraySymbol) item).fill(reg);
+            }
         }
     }
 
     public void loadSymbol(String name) {
         SymbolItem sym = getSymbol(name);
-        if (sym == null) {
-            //TODO
-        } else {
-            //TODO
-            if (sym instanceof VariableSymbol) {
-                addIr(new LoadIr(sym.getReg()));
-            } else if (sym instanceof ConstVariableSymbol) {
-                int v = ((ConstVariableSymbol) sym).getValue();
-                if (v >= 0) {
-                    IrList.setLastOp("" + v);
-                } else {
-                    addIr(new SubIr("0", "" + (-1 * v)));
-                }
+        if (sym instanceof VariableSymbol) {
+            addIr(new LoadIr(sym.getReg()));
+        } else if (sym instanceof ConstVariableSymbol) {
+            int v = ((ConstVariableSymbol) sym).getValue();
+            if (v >= 0) {
+                IrList.setLastOp("" + v);
+            } else {
+                addIr(new SubIr("0", "" + (-1 * v)));
             }
+        } else if (sym instanceof ArraySymbol) {
+            ((ArraySymbol) sym).gep(null, null);
+        } else if (sym instanceof ConstArraySymbol) {
+            ((ConstArraySymbol) sym).gep(null, null);
+        }
+    }
+
+    public void loadArray(String name, String d1, String d2) {
+        SymbolItem item = getSymbol(name);
+        int d = 0;
+        if (item instanceof ArraySymbol) {
+            ((ArraySymbol) item).gep(d1, d2);
+            d = ((ArraySymbol) item).getD();
+        } else if (item instanceof ConstArraySymbol) {
+            ((ConstArraySymbol) item).gep(d1, d2);
+            d = ((ConstArraySymbol) item).getD();
+        }
+        if (d2 != null || d != 2) {
+            addIr(new LoadIr(IrList.lastOp()));
         }
     }
 
     public int getSymbolValue(String name, int d1, int d2) {
         SymbolItem sym = getSymbol(name);
-        if (sym == null) {
-            //TODO
-        } else {
-            if (sym instanceof ConstArraySymbol) {
-                //TODO
-            } else if (sym instanceof ConstVariableSymbol) {
-                return ((ConstVariableSymbol) sym).getValue();
-            }
+        if (sym instanceof ConstArraySymbol) {
+            return ((ConstArraySymbol) sym).getValue(d1, d2);
+        } else if (sym instanceof ConstVariableSymbol) {
+            return ((ConstVariableSymbol) sym).getValue();
         }
         return 0;
-    }
-
-    public int getVarValue(String name) {
-        SymbolItem item = getSymbol(name);
-        if (item != null) {
-            return ((ConstVariableSymbol) item).getValue();
-        } else if (father != null) {
-            return father.getVarValue(name);
-        } else {
-            return 0;
-        }
-    }
-
-    public int getArrayValue(String name, int i1, int i2) {
-        SymbolItem item = getSymbol(name);
-        if (item != null) {
-            return ((ConstArraySymbol) item).getValue(i1, i2);
-        } else if (father != null) {
-            return father.getArrayValue(name, i1, i2);
-        } else {
-            return 0;
-        }
     }
 
     public void fillType(TCode code) {
@@ -270,9 +249,7 @@ public class SymbolTable {
     }
 
     public SymbolTable createChildTable() {
-        SymbolTable child = new SymbolTable(this);
-        children.add(child);
-        return child;
+        return new SymbolTable(this);
     }
 
     public void setParams(ArrayList<SymbolItem> items) {
@@ -319,6 +296,20 @@ public class SymbolTable {
             }
         }
         return null;
+    }
+
+    public int getLevel(String name) {
+        SymbolItem item = getSymbol(name);
+        if (item instanceof VariableSymbol || item instanceof ConstVariableSymbol) {
+            return 0;
+        } else if (item instanceof ArraySymbol) {
+            return ((ArraySymbol) item).getLevel();
+        } else if (item instanceof FuncSymbol) {
+            if (((FuncSymbol) item).getReturnType().equals(TCode.VOIDTK)) {
+                return -1;
+            }
+        }
+        return 0;
     }
 
     private void addError(char t) {

@@ -38,15 +38,10 @@ public class FunctionDefine implements Define {
         s.append(isVoid ? "void @" : "i32 @");
         s.append(name).append("(");
         for (int i = 0; i < levels.size(); i++) {
-            switch (levels.get(i)) {
-                case 0:
-                    s.append("i32 ");
-                    break;
-                case 1:
-                    s.append("i32* ");
-                    break;
-                default:
-                    s.append("[").append(levels.get(i) - 1).append(" x i32]* ");
+            if (levels.get(i) == 0) {
+                s.append("i32 ");
+            } else {
+                s.append("i32* ");
             }
             //s.append("%").append(i);
             if (i != levels.size() - 1) {

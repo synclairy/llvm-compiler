@@ -1,5 +1,8 @@
 package main.models.common.symbol;
 
+import main.models.common.llvm.IrList;
+import main.models.common.llvm.ir.IR;
+
 import java.util.ArrayList;
 
 public interface SymbolItem {
@@ -10,4 +13,8 @@ public interface SymbolItem {
     String getName();
 
     void setValues(ArrayList<Integer> values);
+
+    default void addIr(IR ir) {
+        IrList.getInstance().addIr(ir);
+    }
 }

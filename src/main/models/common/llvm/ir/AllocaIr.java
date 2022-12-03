@@ -30,7 +30,7 @@ public class AllocaIr implements IR {
             return "\t" + reg + " = alloca " + "[" + d1 + " x " +
                     "[" + d2 + " x i32]] ;" + name + "\n";
         } else if (d1 != -1) {
-            return "\t" + reg + " = alloca " + "[" + d1 + " x " +
+            return "\t" + reg + " = alloca " + "[" + d1 +
                      " x i32] ;" + name + "\n";
         } else {
             return "\t" + reg + " = alloca i32 ;" + name + "\n";

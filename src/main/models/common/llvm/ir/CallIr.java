@@ -11,7 +11,7 @@ public class CallIr implements IR {
     private final String name;
     private final ArrayList<String> params;
     private final TCode code;
-    private final ArrayList<Integer> levels;
+    private final FuncSymbol func;
 
     public CallIr(FuncSymbol func,
                   ArrayList<String> params) {
@@ -23,7 +23,7 @@ public class CallIr implements IR {
         }
         this.name = func.getName();
         this.params = params;
-        levels = new ArrayList<>();
+        this.func = func;
     }
 
     @Override
@@ -33,17 +33,12 @@ public class CallIr implements IR {
         s.append("call ");
         s.append(code.equals(TCode.VOIDTK) ? "void @" : "i32 @");
         s.append(name).append("(");
+        ArrayList<Integer> levels = func.getLevels();
         for (int i = 0; i < params.size(); i++) {
-            levels.add(0);//TODO
-            switch (levels.get(i)) {
-                case 0:
-                    s.append("i32 ");
-                    break;
-                case 1:
-                    s.append("i32* ");
-                    break;
-                default:
-                    s.append("[").append(levels.get(i) - 1).append(" x i32]* ");
+            if (levels.get(i) == 0) {
+                s.append("i32 ");
+            } else {
+                s.append("i32* ");
             }
             s.append(params.get(i));
             if (i != params.size() - 1) {

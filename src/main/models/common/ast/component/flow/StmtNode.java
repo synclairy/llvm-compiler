@@ -90,7 +90,7 @@ public class StmtNode extends TreeRoot {
                     } else {
                         getRootByIndex(2).llvm();
                     }
-                    ((LValNode) lv).store();
+                    ((LValNode) lv).store(lastOp());
                 } else {
                     fillLineByIndex(1);
                     travelSal1(NCode.Exp);

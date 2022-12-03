@@ -8,7 +8,7 @@ import main.models.common.llvm.ir.StoreIr;
 import java.util.ArrayList;
 
 public class VariableSymbol implements SymbolItem {
-    private String name;
+    private final String name;
     private String addrReg;
     private int value;
 
@@ -34,7 +34,7 @@ public class VariableSymbol implements SymbolItem {
         switch (type) {
             case "common":
                 addrReg = IrList.newReg();
-                IrList.getInstance().addIr(new AllocaIr(addrReg, name));
+                addIr(new AllocaIr(addrReg, name));
                 break;
             case "param":
                 addrReg = IrList.newReg();
@@ -42,8 +42,8 @@ public class VariableSymbol implements SymbolItem {
             case "paramStore":
                 String temp = addrReg;
                 addrReg = IrList.newReg();
-                IrList.getInstance().addIr(new AllocaIr(addrReg, name));
-                IrList.getInstance().addIr(new StoreIr(temp, addrReg));
+                addIr(new AllocaIr(addrReg, name));
+                addIr(new StoreIr(temp, addrReg));
                 break;
             default:
                 addrReg = "@" + name;

@@ -14,7 +14,15 @@ public class LValNode extends TreeRoot {
         fillLineByIndex(0);
         if (getChildren().size() == 1) {
             getTable().loadSymbol(getFirstToken().getValue());
-        //} else if (TCode.LPARENT.equals(getCodeByIndex(1))) {
+        } else if (getChildren().size() >= 4) {
+            getRootByIndex(2).llvm();
+            String op1 = lastOp();
+            String op2 = null;
+            if (getChildren().size() == 7) {
+                getRootByIndex(5).llvm();
+                op2 = lastOp();
+            }
+            getTable().loadArray(getFirstToken().getValue(), op1, op2);
         }
     }
 
@@ -23,6 +31,13 @@ public class LValNode extends TreeRoot {
         fillLineByIndex(0);
         if (getChildren().size() == 1) {
             return getTable().getSymbolValue(getFirstToken().getValue(), 0, 0);
+        } else if (getChildren().size() >= 4) {
+            int d1 = getRootByIndex(2).synthesize();
+            int d2 = -1;
+            if (getChildren().size() == 7) {
+                d2 = getRootByIndex(5).synthesize();
+            }
+            return getTable().getSymbolValue(getFirstToken().getValue(), d1, d2);
         }
         return 0;
     }
@@ -43,17 +58,18 @@ public class LValNode extends TreeRoot {
         }
     }
 
-    public void store() {
-        String lo = lastOp();
-        int d1 = 0;
-        int d2 = 0;
-        if (getChildren().size() == 4) {
-            d1 = ((TreeRoot) getChildren().get(2)).synthesize();
-        } else if (getChildren().size() == 7) {
-            d2 = ((TreeRoot) getChildren().get(5)).synthesize();
+    public void store(String lo) {
+        String d1 = null;
+        String d2 = null;
+        if (getChildren().size() >= 4) {
+            getRootByIndex(2).llvm();
+            d1 = lastOp();
+            if (getChildren().size() == 7) {
+                getRootByIndex(5).llvm();
+                d2 = lastOp();
+            }
         }
         fillLineByIndex(0);
         getTable().storeSymbol(getFirstToken().getValue(), lo, d1, d2);
-        // TODO
     }
 }

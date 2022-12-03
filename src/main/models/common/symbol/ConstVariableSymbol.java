@@ -3,7 +3,7 @@ package main.models.common.symbol;
 import java.util.ArrayList;
 
 public class ConstVariableSymbol implements SymbolItem {
-    private String name;
+    private final String name;
     private int value;
 
     @Override
